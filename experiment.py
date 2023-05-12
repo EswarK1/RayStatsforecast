@@ -1,37 +1,37 @@
+
+# %%
 import argparse
 import os
 from time import time
 
-import ray
+#import ray
 import pandas as pd
 from statsforecast.utils import generate_series
-from statsforecast.models import ets
+from statsforecast.models import ETS
 from statsforecast.core import StatsForecast
 
 
-if __name__=="__main__":
-    parser = argparse.ArgumentParser(description='Scale StatsForecast using ray')
-    parser.add_argument('--ray-address')
-    parser.add_argument('--seasonality', type=int)
-    args = parser.parse_args()
-    ray_address = f'ray://{args.ray_address}:10001'
-    models = [(ets, args.seasonality)] if args.seasonality else [ets] 
-
-    for length in [1_000_000, 2_000_000]:
-        print(f'length: {length}')
-        series = generate_series(n_series=length, seed=1, equal_ends=True)
+for length in [1_00_000, 2_00_000]:
+    print(f'length: {length}')
+    series = generate_series(n_series=length, seed=1, equal_ends=True)
+    print(series)
         # add constant to avoid numerical errors
         # in production settings we simply remove this constant
         # from the forecasts
-        series['y'] += 10
+    series['y'] += 10
+    model = [
+        ETS(season_length=7)
+    ]
+    sf = StatsForecast(
+        df=series,
+        models=model,
+        freq='D', 
+        n_jobs=-1
+    )
+    init = time()
+    forecasts = sf.forecast(7)
+    total_time = (time() - init) / 60
+    print(f'n_series: {length} total time: {total_time}')
 
-        model = StatsForecast(series, 
-                              models=models, 
-                              freq='D', 
-                              n_jobs=-1, 
-                              ray_address=ray_address)
-        init = time()
-        forecasts = model.forecast(7)
-        total_time = (time() - init) / 60
-        print(f'n_series: {length} total time: {total_time}')
 
+# %%
