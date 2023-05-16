@@ -123,7 +123,8 @@ available_node_types:
                   diskSizeGb: 100
                   sourceImage: projects/deeplearning-platform-release/global/images/family/common-cpu
             scheduling:
-              - preemptible: true
+              - preemptible: false
+              - provisioningModel: Spot 
 
             serviceAccounts:
               - email: 834110662300-compute@developer.gserviceaccount.com
